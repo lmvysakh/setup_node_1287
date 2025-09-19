@@ -12,14 +12,16 @@ jobs:
     # env:
     #   TARGET_DOMAIN: example.com
     steps:
+      - uses: actions/checkout@v4
+
       - name: Setup Node.js with caching
         uses: actions/setup-node@v5
         with:
           node-version: 20
           cache: npm
-          # always-auth: false
-          # check-latest: false
-          # package-manager-cache: true
+          always-auth: false
+          check-latest: false
+          package-manager-cache: true
           # cache-dependency-path: package-lock.json   # <-- Explicitly point to lock file
 
       
