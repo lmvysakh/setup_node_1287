@@ -21,4 +21,4 @@ jobs:
           check-latest: false
           package-manager-cache: true
       - name: Install dependencies
-        run: npm install
+        run: npm ci
