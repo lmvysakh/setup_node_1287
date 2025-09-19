@@ -13,7 +13,7 @@ jobs:
     #   TARGET_DOMAIN: example.com
     steps:
       - name: Setup Node.js with caching
-        uses: actions/setup-node@v5
+        uses: actions/setup-node@v4
         with:
           node-version: 20
           cache: npm
