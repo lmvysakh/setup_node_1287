@@ -9,8 +9,8 @@ on:
 jobs:
   test-cache-warning:
     runs-on: ubuntu-latest
-    env:
-      TARGET_DOMAIN: example.com
+    # env:
+    #   TARGET_DOMAIN: example.com
     steps:
       - name: Setup Node.js with caching
         uses: actions/setup-node@v5
