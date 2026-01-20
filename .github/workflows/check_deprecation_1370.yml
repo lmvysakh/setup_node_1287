@@ -1,3 +1,4 @@
+
 name: Reproduce url.parse() Deprecation Warning
 
 on:
@@ -15,9 +16,8 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Setup Node.js with caching
-        # uses: actions/setup-node@v5
+        uses: actions/setup-node@v5
         # uses: lmvysakh/setup-node@resolve_punycode
-        uses: salmanmkc/setup-dotnet@fix/license-metadata
         with:
           node-version: 20
           cache: npm
