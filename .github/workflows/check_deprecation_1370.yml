@@ -16,7 +16,8 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Setup Node.js with caching
-        uses: actions/setup-node@v5
+        # uses: actions/setup-node@v5
+        uses: actions/setup-node@v6.2.0
         # uses: lmvysakh/setup-node@resolve_punycode
         with:
           node-version: 20
