@@ -21,4 +21,4 @@ jobs:
           node-version: 20
 
       - name: Print the setup-node cache key
-        run: echo "Cache key used by setup-node: ${{ steps.setup-node.outputs.cache-key }}"
+        run:  echo ${{ steps.setup-node.outputs.cache-key }}
