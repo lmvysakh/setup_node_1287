@@ -1,0 +1,24 @@
+name: Print setup-node cache key
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  print-cache-key:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js and generate cache key
+        id: setup-node
+        uses: alexdunae/setup-node@main
+        with:
+          cache: 'npm'
+          node-version: 20
+
+      - name: Print the setup-node cache key
+        run: echo "Cache key used by setup-node: ${{ steps.setup-node.outputs.cache-key }}"

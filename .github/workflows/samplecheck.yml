@@ -2,11 +2,11 @@ name: Check Node.js Matrix Build
 
 on:
   workflow_dispatch:
-  push:
-    branches:
-      - main
-      - master
-  pull_request:
+  # push:
+  #   branches:
+  #     - main
+  #     - master
+  # pull_request:
 
 
 jobs:

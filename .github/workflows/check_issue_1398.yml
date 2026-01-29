@@ -1,9 +1,9 @@
 name: Reproduce warning for package.json
 
 on:
-  push:
-    branches:
-      - main
+  # push:
+  #   branches:
+  #     - main
   workflow_dispatch:
 
 jobs:
