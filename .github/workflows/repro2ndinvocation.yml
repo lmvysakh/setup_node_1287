@@ -1,0 +1,32 @@
+name: "Reproduce File Exists – setup-node"
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # 1st setup-node call: restores npm cache (miss on 1st run, hit on 2nd run)
+      - uses: actions/setup-node@v6
+        with:
+          node-version-file: .node-version   # or use: node-version: '22'
+          cache: npm
+
+      # Populate the npm cache so there's something to restore next time
+      - name: Install dependencies
+        run: npm ci
+
+      # 2nd setup-node call: triggers the issue
+      # - 1st workflow run: cache miss → seeds the cache
+      # - 2nd workflow run: cache HIT → potential tar "Cannot open: File exists"
+      - uses: actions/setup-node@v6
+        with:
+          node-version-file: .node-version
+          cache: npm
