@@ -1,0 +1,116 @@
+# ============================================================================
+# CI Workflow — Demonstrates existing pnpm caching in actions/setup-node
+# ============================================================================
+# This workflow shows how setup-node currently handles pnpm caching.
+# Issue #1428 proposes improving this by pruning the pnpm store before caching.
+# ============================================================================
+
+name: CI with pnpm Cache
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      # -----------------------------------------------------------------------
+      # Step 1: Check out the repository code
+      # -----------------------------------------------------------------------
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # -----------------------------------------------------------------------
+      # Step 2: Install pnpm globally
+      # -----------------------------------------------------------------------
+      # pnpm must be installed BEFORE setup-node, because setup-node needs
+      # to run `pnpm store path --silent` to discover the cache directory.
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      # -----------------------------------------------------------------------
+      # Step 3: Setup Node.js with pnpm caching enabled
+      # -----------------------------------------------------------------------
+      # This is the KEY step. When `cache: 'pnpm'` is set, setup-node does:
+      #
+      #   A) CACHE RESTORE (runs immediately during this step):
+      #      1. Runs `pnpm store path --silent` → gets the pnpm store directory
+      #         (e.g., /home/runner/.local/share/pnpm/store/v3)
+      #      2. Hashes the lockfile `pnpm-lock.yaml` → generates a fingerprint
+      #      3. Builds a cache key like:
+      #         "node-cache-Linux-arm64-pnpm-<hash-of-pnpm-lock.yaml>"
+      #      4. Tries to restore a previously saved cache matching that key
+      #      5. Sets output `cache-hit` to true/false
+      #
+      #   B) CACHE SAVE (runs automatically in a post-job step, AFTER all steps):
+      #      1. Compares the current primary key with the restored cache key
+      #      2. If they MATCH → skip saving (nothing changed)
+      #      3. If they DON'T MATCH → save the ENTIRE pnpm store to cache
+      #
+      #    THE PROBLEM (Issue #1428):
+      #      In step B3, the ENTIRE store is saved — including old/unused packages
+      #      from previous dependency versions. Over time, this cache grows larger
+      #      and larger because pnpm's content-addressable store never removes
+      #      old packages on its own.
+      #
+      #      The fix would be to run `pnpm store prune` between B1 and B3 to
+      #      remove unreferenced packages before saving.
+      #
+      - name: Setup Node.js with pnpm cache
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'pnpm'
+          # Optional: specify a custom lockfile path
+          # cache-dependency-path: 'packages/**/pnpm-lock.yaml'
+
+      # -----------------------------------------------------------------------
+      # Step 4: Install dependencies
+      # -----------------------------------------------------------------------
+      # If cache was restored (cache-hit = true), pnpm install is nearly instant
+      # because packages are already in the store — pnpm just creates symlinks.
+      #
+      # If cache was NOT restored (cache-hit = false), pnpm downloads all
+      # packages from the registry into its content-addressable store.
+      #
+      # Either way, after this step the pnpm store may contain:
+      #   Packages referenced by current pnpm-lock.yaml
+      #    OLD packages from previous runs (if cache was restored from
+      #      a prior version of pnpm-lock.yaml) ← This is the bloat!
+      #
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      # -----------------------------------------------------------------------
+      # Step 5-7: Your actual CI steps
+      # -----------------------------------------------------------------------
+      - name: Lint
+        run: pnpm run lint
+
+      # - name: Run tests
+      #   run: pnpm test
+
+      # - name: Build
+      #   run: pnpm run build
+
+      # -----------------------------------------------------------------------
+      # (INVISIBLE) Post-job step — Cache Save
+      # -----------------------------------------------------------------------
+      # After ALL steps above complete, setup-node's post-action runs
+      # automatically. It saves the pnpm store directory to the cache.
+      #
+      # Currently (existing behavior):
+      #   cache.saveCache(["/home/runner/.local/share/pnpm/store/v3"], key)
+      #   → Saves EVERYTHING in the store, including stale packages
+      #
+      # Proposed by Issue #1428 (new behavior):
+      #   exec("pnpm store prune")   ← NEW: removes unreferenced packages
+      #   cache.saveCache(["/home/runner/.local/share/pnpm/store/v3"], key)
+      #   → Saves only the packages actually needed
+      #
