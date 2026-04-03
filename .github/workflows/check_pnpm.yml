@@ -67,7 +67,7 @@ jobs:
         uses: actions/setup-node@v6
         with:
           node-version: 20
-          cache: 'pnpm'
+          # cache: 'pnpm' In order to check manually, disabled
           # Optional: specify a custom lockfile path
           # cache-dependency-path: 'packages/**/pnpm-lock.yaml'
 
@@ -85,6 +85,17 @@ jobs:
       #    OLD packages from previous runs (if cache was restored from
       #      a prior version of pnpm-lock.yaml) ← This is the bloat!
       #
+
+      # Manual cache with restore-keys — THIS is what causes bloat
+      - name: Cache pnpm store
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.local/share/pnpm/store/v3
+          key: pnpm-store-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
+          restore-keys: |
+            pnpm-store-${{ runner.os }}-
+            
       - name: Check store size BEFORE install
         run: |
           echo "Store path:"
