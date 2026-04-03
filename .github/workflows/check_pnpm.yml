@@ -101,8 +101,6 @@ jobs:
           echo "Store size after install:"
           du -sh "$(pnpm store path)"
           echo ""
-          echo "What pnpm store prune WOULD clean up:"
-          pnpm store prune --dry-run 2>/dev/null || pnpm store prune
 
       # -----------------------------------------------------------------------
       # Step 5-7: Your actual CI steps
