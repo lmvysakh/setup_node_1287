@@ -85,8 +85,24 @@ jobs:
       #    OLD packages from previous runs (if cache was restored from
       #      a prior version of pnpm-lock.yaml) ← This is the bloat!
       #
+      - name: Check store size BEFORE install
+        run: |
+          echo "Store path:"
+          pnpm store path
+          echo "Store size:"
+          du -sh "$(pnpm store path)" 2>/dev/null || echo "Store is empty (first run)"
+
+
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
+
+      - name: Check store size AFTER install
+        run: |
+          echo "Store size after install:"
+          du -sh "$(pnpm store path)"
+          echo ""
+          echo "What pnpm store prune WOULD clean up:"
+          pnpm store prune --dry-run 2>/dev/null || pnpm store prune
 
       # -----------------------------------------------------------------------
       # Step 5-7: Your actual CI steps
