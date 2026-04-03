@@ -95,7 +95,7 @@ jobs:
           key: pnpm-store-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
           restore-keys: |
             pnpm-store-${{ runner.os }}-
-            
+
       - name: Check store size BEFORE install
         run: |
           echo "Store path:"
@@ -112,6 +112,8 @@ jobs:
           echo "Store size after install:"
           du -sh "$(pnpm store path)"
           echo ""
+          echo "File count in store:"
+          find "$(pnpm store path)" -type f | wc -l
 
       # -----------------------------------------------------------------------
       # Step 5-7: Your actual CI steps
