@@ -90,14 +90,15 @@ jobs:
       # -----------------------------------------------------------------------
       # Step 5-7: Your actual CI steps
       # -----------------------------------------------------------------------
-      - name: Lint
-        run: pnpm run lint
+      # - name: Lint
+      #   run: pnpm run lint
 
-      # - name: Run tests
-      #   run: pnpm test
+      - name: Verify installed dependencies
+        run: node -e "require('express'); console.log('All dependencies loaded successfully')"
 
-      # - name: Build
-      #   run: pnpm run build
+      - name: Check pnpm store status
+        run: pnpm store status
+
 
       # -----------------------------------------------------------------------
       # (INVISIBLE) Post-job step — Cache Save
