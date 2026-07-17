@@ -1,0 +1,44 @@
+# Workflow to test Node.js caching behaviour on self-hosted runners
+# Run this twice to observe:
+#   Run #1: Downloads Node.js and caches to RUNNER_TOOL_CACHE
+#   Run #2: Finds in cache — no download needed
+name: Self-Hosted - Node.js Cache Behaviour
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+
+jobs:
+  install-node:
+    name: Install Node.js (Self-Hosted)
+    runs-on: self-hosted
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Setup Node.js 20
+        uses: actions/setup-node@v7
+        with:
+          node-version: '20'
+
+      - name: Setup Node.js 22
+        uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+
+      - name: Record post-install state
+        run: |
+          Write-Host "=== Active Node version ==="
+          node --version
+          Write-Host ""
+          Write-Host "=== Node location ==="
+          Get-Command node | Select-Object -ExpandProperty Source
+          Write-Host ""
+          Write-Host "=== Cached Node versions after setup ==="
+          $nodeCachePath = Join-Path $env:RUNNER_TOOL_CACHE "node"
+          if (Test-Path $nodeCachePath) {
+            Get-ChildItem $nodeCachePath -Directory | ForEach-Object { Write-Host $_.Name }
+          } else {
+            Write-Host "No cached Node versions found"
+          }
+        shell: powershell
